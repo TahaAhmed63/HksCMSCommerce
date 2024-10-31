@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+model AdminUser {
+  id               Int      @id @default(autoincrement())
+  username         String   @unique @db.VarChar(50)
+  email            String   @unique @db.VarChar(100)
+  password         String   @db.VarChar(255)
+  role             String   @db.VarChar(50)
+  first_name       String   @db.VarChar(50)
+  last_name        String   @db.VarChar(50)
+  date_registered  DateTime @default(now())
+  status           String   @db.VarChar(20)
+  last_login       DateTime?
+  permissions      Json?
+  actions_log      AdminAction[]
+
+  @@map("admin_users")
+}
+model AdminAction {
+  id               Int      @id @default(autoincrement())
+  admin_user_id    Int
+  admin_user       AdminUser @relation(fields: [admin_user_id], references: [id])
+  action_type      String   @db.VarChar(100)
+  action_details   Json?
+  performed_at     DateTime @default(now())
+
+  @@map("admin_actions")
+}
+model User {
+ id               Int            @id @default(autoincrement())
+  username         String         @unique @db.VarChar(50)
+  email            String         @unique @db.VarChar(100)
+  password         String         @db.VarChar(255)
+  first_name       String         @db.VarChar(50)
+  last_name        String         @db.VarChar(50)
+  billing_address  String?        @db.VarChar(255)
+  shipping_address String?        @db.VarChar(255)
+  phone_number     String?        @db.VarChar(20)
+  date_registered  DateTime       @default(now())
+  status           String         @db.VarChar(20)
+
+  orders          Order[]
+  reviews         Review[]
+  subscriptions   Subscription[]
+
+  @@map("users")
+}
+
+model Category {
+  id               Int       @id @default(autoincrement())
+  name             String    @db.VarChar(100)
+  slug             String    @unique @db.VarChar(100)
+  description      String?   @db.Text
+  parent_category  Int?
+  parent           Category? @relation("CategoryHierarchy", fields: [parent_category], references: [id])
+  children         Category[] @relation("CategoryHierarchy")
+  products         Product[]
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  @@map("categories")
+}
+
+model Attribute {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(100)
+  values          AttributeValue[]
+  products        Product[]         @relation("ProductAttributes")
+  slug            String            @unique @db.VarChar(100)
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id                 Int               @id @default(autoincrement())
+  value              String            @db.VarChar(100)
+  slug            String            @unique @db.VarChar(100)
+  attribute_id       Int
+  attribute          Attribute         @relation(fields: [attribute_id], references: [id])
+  product_id         Int?
+  product            Product?          @relation("ProductAttributes", fields: [product_id], references: [id])
+  productVariations  ProductVariation[] @relation("ProductVariationAttributes")
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @updatedAt
+
+
+  @@map("attribute_values")
+}
+
+model ProductVariation {
+  id              Int               @id @default(autoincrement())
+    slug            String            @unique @db.VarChar(100)
+  sku             String            @unique @db.VarChar(50)
+  price           Float
+  stock           Int
+  product_id      Int
+  product         Product           @relation(fields: [product_id], references: [id])
+  attributes      AttributeValue[]  @relation("ProductVariationAttributes")
+  inventory       Inventory[]
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  @@map("product_variations")
+}
+
+model Product {
+  id                 Int                @id @default(autoincrement())
+  name               String             @db.VarChar(100)
+  slug               String             @unique @db.VarChar(100)
+  description        String?            @db.Text
+  short_description  String?            @db.Text
+  price              Float
+  regular_price      Float?
+  sale_price         Float?
+  stock              Int
+  sku                String             @unique @db.VarChar(50)
+  weight             Float?
+  dimensions         Json?
+  featured_image     String?            @db.VarChar(255)
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  status             String             @db.VarChar(20)
+
+  category_id        Int?
+  category           Category?          @relation(fields: [category_id], references: [id])
+  tags               Tag[]              @relation("ProductTags")
+  order_items        OrderItem[]
+  reviews            Review[]
+  inventory          Inventory[]
+  product_variations ProductVariation[]
+  coupons            Coupon[]           @relation("ProductCoupons")
+  attributes         Attribute[]        @relation("ProductAttributes")
+  attribute_values   AttributeValue[]   @relation("ProductAttributes")
+  subscriptions      Subscription[]
+
+  @@map("products")
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  order_number    String        @unique @db.VarChar(50)
+  user_id         Int?
+  user            User?         @relation(fields: [user_id], references: [id])
+  order_date      DateTime      @default(now())
+  status          String        @db.VarChar(20)
+  total_amount    Float
+  subtotal        Float
+  tax             Float
+  shipping_cost   Float
+  discount        Float
+  shipping_method String        @db.VarChar(50)
+  payment_method  String        @db.VarChar(50)
+  shipping_address String       @db.VarChar(255)
+  billing_address  String       @db.VarChar(255)
+  name            String        @db.VarChar(100)
+  email           String        @db.VarChar(100)
+  phone           String?       @db.VarChar(20)
+  
+  order_items     OrderItem[]
+  payments        Payment[]
+  shipping_details ShippingDetails?
+  coupon          Coupon?       @relation(fields: [coupon_id], references: [id])
+  coupon_id       Int?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              Int           @id @default(autoincrement())
+  order_id        String
+  order           Order         @relation(fields: [order_id], references: [id])
+  product_id      Int
+  product         Product       @relation(fields: [product_id], references: [id])
+  quantity        Int
+  unit_price      Float
+  total_price     Float
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  order_id        String
+  order           Order         @relation(fields: [order_id], references: [id])
+  payment_date    DateTime
+  payment_method  String        @db.VarChar(50)
+  payment_status  String        @db.VarChar(20)
+  transaction_id  String        @db.VarChar(100)
+  amount          Float
+
+  @@map("payments")
+}
+
+model ShippingDetails {
+  id                Int           @id @default(autoincrement())
+  order_id          String        @unique
+  order             Order         @relation(fields: [order_id], references: [id])
+  shipping_method   String        @db.VarChar(50)
+  shipping_address  String        @db.VarChar(255)
+  shipping_status   String        @db.VarChar(20)
+  tracking_number   String?       @db.VarChar(100)
+  estimated_delivery DateTime?
+
+  @@map("shipping_details")
+}
+
+model Review {
+  id          Int       @id @default(autoincrement())
+  content     String    @db.Text
+  rating      Int
+  product_id  Int
+  product     Product   @relation(fields: [product_id], references: [id])
+  user_id     Int
+  user        User      @relation(fields: [user_id], references: [id])
+  created_at  DateTime  @default(now())
+
+  @@map("reviews")
+}
+
+model Subscription {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  user          User      @relation(fields: [user_id], references: [id])
+  product_id    Int
+  product       Product   @relation(fields: [product_id], references: [id])
+  status        String    @db.VarChar(20)
+  start_date    DateTime
+  end_date      DateTime?
+  billing_period String   @db.VarChar(20)
+  renewal_price Float
+
+  @@map("subscriptions")
+}
+
+model Tag {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  slug        String    @unique @db.VarChar(100)
+  products    Product[] @relation("ProductTags")
+
+  @@map("tags")
+}
+
+model Inventory {
+  id                Int     @id @default(autoincrement())
+  product_id        Int
+  product           Product @relation(fields: [product_id], references: [id])
+  product_variation_id Int?
+  product_variation ProductVariation? @relation(fields: [product_variation_id], references: [id])
+  quantity          Int
+  location          String  @db.VarChar(100)
+  low_stock_threshold Int
+  last_updated      DateTime @updatedAt
+
+  @@map("inventory")
+}
+
+model Coupon {
+  id              Int       @id @default(autoincrement())
+  code            String    @unique @db.VarChar(50)
+  discount_amount Float
+  discount_type   String    @db.VarChar(20)
+  expiry_date     DateTime?
+  min_order_value Float?
+  products        Product[] @relation("ProductCoupons")
+  orders          Order[]
+
+  @@map("coupons")
+}
