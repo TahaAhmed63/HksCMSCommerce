@@ -35,8 +35,11 @@ export async function PUT(request, { params }) {
       where: { id },
       data: {
         value: body.value,
+        slug: body.slug,  // Ensure slug is included here
         attribute: {
-          connect: { id: body.attribute_id },
+          connect: {
+            id: body.attribute_id,
+          },
         },
       },
       include: {

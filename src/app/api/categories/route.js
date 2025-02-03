@@ -1,6 +1,10 @@
 
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { authMiddleware } from '../auth/Middleware/middleware';
+// GET all attribute values
 
+const prisma = new PrismaClient();
 // GET all categories
 export async function GET() {
   const categories = await prisma.category.findMany({

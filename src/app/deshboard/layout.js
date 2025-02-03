@@ -24,11 +24,13 @@ import DeshboardTable from "@/MainComponents/DeshboardTable"
 import Sidebar from "@/MainComponents/Sidebar"
 import MatricCard from "@/MainComponents/MatricCard"
 import BarMainChart from "@/MainComponents/BarMainChart"
-
+import { Provider } from 'react-redux';
+import { store } from '@/store/store'; // Adjust the path if necessary
 
 export default function DashboardLayout({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     return (
+      <Provider store={store}>
         <div className="flex h-screen bg-gray-100">
         {/* Sidebar */}
         <aside className={`bg-[#1e2530] text-white w-64 min-h-screen ${sidebarOpen ? 'block' : 'hidden'} md:block`}>
@@ -66,6 +68,7 @@ export default function DashboardLayout({ children }) {
         <main style={{overflow:"scroll",height:"100%"}}>{children}</main>
       </div>
       </div>
+      </Provider>
     );
   }
   

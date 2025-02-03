@@ -23,6 +23,8 @@ const Page = ({ params }) => {
     const [attributesValues, setAttributesValues] = useState([])
     const router = useRouter();
     const [loading, setLoading] = useState(true)
+    const [AttributeSlug, setAttributeSlug] = useState('');
+
     const [error, setError] = useState(null)
     const attributemainId=parseInt(id)
     const token = Cookies.get('token'); // Replace 'your_token_name' with your actual cookie name
@@ -37,7 +39,7 @@ const Page = ({ params }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`, // Include token in headers
                 },
-                body: JSON.stringify({ value: varientName, attribute_id: attributemainId }), // Sending attribute name in body
+                body: JSON.stringify({ value: varientName, attribute_id: attributemainId ,slug:AttributeSlug}), // Sending attribute name in body
             });
 
             if (!response.ok) {
@@ -67,25 +69,43 @@ const Page = ({ params }) => {
             });
         }
     };
-    useEffect(() => {
-        const fetchAttributes = async () => {
-          try {
-            const response = await fetch(`http://localhost:3000/api/attributes/${attributemainId}`);
-            if (!response.ok) throw new Error("Failed to fetch attributes")
-            const data = await response.json()
-            setAttributesValues(data?.values)
-          } catch (err) {
-            setError(
-              err instanceof Error ? err.message : "Failed to fetch attributes"
-            )
-          } finally {
-            setLoading(false)
-          }
+    const fetchAttributes = async () => {
+        try {
+          const response = await fetch(`http://localhost:3000/api/attributes/${attributemainId}`);
+          if (!response.ok) throw new Error("Failed to fetch attributes")
+          const data = await response.json()
+          setAttributesValues(data?.values)
+        } catch (err) {
+          setError(
+            err instanceof Error ? err.message : "Failed to fetch attributes"
+          )
+        } finally {
+          setLoading(false)
         }
+      }
+    useEffect(() => {
+      
     
         fetchAttributes()
       }, [])
       console.log(attributesValues?.values,"attributesValues")
+      async function deleteAttribute(attributeId) {
+        try {
+          const response = await fetch(`http://localhost:3000/api/AttributeValues/${attributeId}`, {
+            method: 'DELETE',
+          });
+       
+          if (!response.ok) {
+            throw new Error('Failed to delete attribute');
+          }
+      
+          const data = await response.json();
+          fetchAttributes()
+          console.log('Attribute deleted:', data);
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
     return (
         <div className="p-5 bg-gray-100 flex justify-center">
             <div className="w-full max-w-5xl bg-white rounded-lg p-6 space-y-6">
@@ -102,6 +122,16 @@ const Page = ({ params }) => {
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     value={varientName}
                                     onChange={(e) => setvarientName(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Attribute Slug</label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter Slug"
+                                    value={AttributeSlug}
+                                    onChange={(e) => setAttributeSlug(e.target.value)} // Update state on input change
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />
                             </div>
                             <div className="flex justify-end">
@@ -151,6 +181,7 @@ const Page = ({ params }) => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={()=>{deleteAttribute(attribute.id)}}
                       className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4" />

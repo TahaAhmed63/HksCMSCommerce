@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 
 const AttributeForm = () => {
     const [attributeName, setAttributeName] = useState('');
+    const [AttributeSlug, setAttributeSlug] = useState('');
     const [attributes, setAttributes] = useState([])
     const router = useRouter();
     const [loading, setLoading] = useState(true)
@@ -44,7 +45,7 @@ const AttributeForm = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`, // Include token in headers
                 },
-                body: JSON.stringify({ name: attributeName }), // Sending attribute name in body
+                body: JSON.stringify({ name: attributeName ,slug:AttributeSlug}), // Sending attribute name in body
             });
 
             if (!response.ok) {
@@ -78,21 +79,25 @@ const AttributeForm = () => {
     const handleAttributeClick = (attributeId) => {
         router.push(`/deshboard/variation/create/${attributeId}`);
       };
-    useEffect(() => {
-        const fetchAttributes = async () => {
-          try {
-            const response = await fetch("http://localhost:3000/api/attributes/")
-            if (!response.ok) throw new Error("Failed to fetch attributes")
-            const data = await response.json()
-            setAttributes(data)
-          } catch (err) {
-            setError(
-              err instanceof Error ? err.message : "Failed to fetch attributes"
-            )
-          } finally {
-            setLoading(false)
-          }
+      const handleAttributeClick2 = (attributeId) => {
+        router.push(`/deshboard/Attributes/Edit/${attributeId}`);
+      };
+      const fetchAttributes = async () => {
+        try {
+          const response = await fetch("http://localhost:3000/api/attributes/")
+          if (!response.ok) throw new Error("Failed to fetch attributes")
+          const data = await response.json()
+          setAttributes(data)
+        } catch (err) {
+          setError(
+            err instanceof Error ? err.message : "Failed to fetch attributes"
+          )
+        } finally {
+          setLoading(false)
         }
+      }
+    useEffect(() => {
+      
     
         fetchAttributes()
       }, [])
@@ -113,6 +118,16 @@ const AttributeForm = () => {
                                     placeholder="Enter Name"
                                     value={attributeName}
                                     onChange={(e) => setAttributeName(e.target.value)} // Update state on input change
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Attribute Slug</label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter Slug"
+                                    value={AttributeSlug}
+                                    onChange={(e) => setAttributeSlug(e.target.value)} // Update state on input change
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />
                             </div>
@@ -180,7 +195,7 @@ const AttributeForm = () => {
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon">
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" onClick={() => handleAttributeClick2(attribute.id)} />
                     </Button>
                     <Button
                       variant="ghost"

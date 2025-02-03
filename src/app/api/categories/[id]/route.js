@@ -1,6 +1,10 @@
-import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
 
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+// GET all attribute values
+
+const prisma = new PrismaClient();
 // GET a category by ID
 export async function GET(request, { params }) {
   const { id } = params;

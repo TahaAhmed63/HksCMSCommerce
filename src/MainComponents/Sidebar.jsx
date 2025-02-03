@@ -32,20 +32,17 @@ const menuData = [
     title: "Products",
     icon: Package,
     subMenu: [
-      { title: "List", link: "/products/list" },
-      { title: "Grid", link: "/products/grid" },
-      { title: "Details", link: "/products/details" },
-      { title: "Edit", link: "/products/edit" },
+      { title: "List", link: "/deshboard/Product/main" },
+      // { title: "Grid", link: "/products/grid" },
+      // { title: "Details", link: "/products/details" },
+      // { title: "Edit", link: "/products/edit" },
       { title: "Create", link: "/deshboard/Product/Create" },
+      { title: "catagories", link: "/deshboard/catagories/create" },
       {title: "Attributes", link: "/deshboard/Attributes/create"},
 
     ]
   },
-  {
-    title: "Category",
-    icon: Layers,
-    link: "/category"
-  },
+,
   {
     title: "Inventory",
     icon: Box,

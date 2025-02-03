@@ -160,16 +160,22 @@ const MenuBar = ({ editor }) => {
   )
 }
 
-const Tiptap = () => {
+const Tiptap = ({ placeholder, name, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
+  
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
       CustomTableCell,
       TableCell,
     ],
+    content: '',
+    onUpdate: ({ editor }) => {
+        const content = editor.getHTML(); // Or `editor.getText()` for plain text
+        onChange(content); // Pass content to the parent component
+    },
     editorProps: {
         attributes: {
             class: "prose p-4 border border-gray-300 rounded-b-md bg-white focus:outline-none max-w-full",
@@ -180,7 +186,7 @@ const Tiptap = () => {
   return (
     <div className="w-full max-w-4xl mx-auto mt-4">
       <MenuBar editor={editor} />
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} placeholder={placeholder} />
     </div>
   )
 }

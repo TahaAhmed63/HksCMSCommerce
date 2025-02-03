@@ -30,11 +30,15 @@ export async function POST(request) {
     try {
       const attributeValue = await prisma.attributeValue.create({
         data: {
-          value: body.value,
-          attribute: {
-            connect: { id: body.attribute_id },
+            value: body.value,
+            slug: body.slug,  // Ensure slug is included here
+            attribute: {
+              connect: {
+                id: body.attribute_id,
+              },
+            },
           },
-        },
+        
         include: {
           attribute: true,
         },
